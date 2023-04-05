@@ -1,5 +1,6 @@
 import logging
 import os
+import sys
 import requests
 from datetime import datetime
 
@@ -7,6 +8,7 @@ from aiogram import Bot, types
 from aiogram.dispatcher import Dispatcher
 from aiogram.utils import executor
 from dotenv import load_dotenv
+from logging.handlers import RotatingFileHandler
 
 load_dotenv()
 
@@ -22,9 +24,36 @@ ICONS = {
         "Mist": "Туман \U00001F32B"
     }
 
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(asctime)s [%(levelname)s] %(message)s',
+    handlers=[
+        logging.StreamHandler(sys.stdout),
+        RotatingFileHandler('program.log',
+                            maxBytes=5000000,
+                            backupCount=5)
+    ]
+)
 
+logger = logging.getLogger(__name__)
 bot = Bot(token=BOT_TOKEN)
 dp = Dispatcher(bot)
+
+
+def check_tokens() -> bool:
+    """Функция проверяет доступность переменных окружения."""
+    return all((BOT_TOKEN, OPEN_WEATHER_TOKEN))
+
+
+@dp.message_handler(commands=['start', 'help'])
+async def start_command(message: types.Message) -> None:
+    keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    buttons = ["Туймазы", "Санкт-Петербург"]
+    keyboard.add(*buttons)
+    await message.answer("Напиши название города,"
+                         "в котором хочешь узнать погоду в настоящее время",
+                         reply_markup=keyboard)
+
 
 @dp.message_handler()
 async def get_weather(message: types.Message) -> None:
@@ -63,9 +92,16 @@ async def get_weather(message: types.Message) -> None:
 
 
 def main():
+    """Основная логика работы бота."""
+    if not check_tokens():
+        logger.critical('Отсутствие обязательных переменных '
+                        'окружения во время запуска бота')
+        raise SystemExit()
     executor.start_polling(dp, timeout=60)
 
 
 if __name__ == '__main__':
-    main()
-
+    try:
+        main()
+    except KeyboardInterrupt:
+        logger.exception('Бот остановлен')
