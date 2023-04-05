@@ -31,6 +31,8 @@ Install dependencies from the file requirements.txt
 ```bash
   pip install -r requirements.txt
 ```
+Launch the weather_telegram_bot python module
+
 
 ## Authors
 
