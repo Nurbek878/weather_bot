@@ -1,5 +1,5 @@
 # weather_bot
-The bot sends the weather at the present time and in a random year at the same time in the requested city, gives the weather in a random city.
+The bot sends the weather for the current time and the weather forecast for 5 days in the requested city. In addition, it sends the weather in this city in a random year.
 
 ## Tech Stack
 
